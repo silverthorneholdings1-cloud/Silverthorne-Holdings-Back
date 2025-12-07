@@ -358,12 +358,26 @@ export const validateOrderId = (id) => {
 // ============================================
 
 /**
- * Valida el ID de un usuario
- * @param {string|number} id - ID a validar
- * @returns {{isValid: boolean, userId: number|null, error: string|null}}
+ * Valida el ID de un usuario (UUID)
+ * @param {string} id - ID a validar (debe ser un UUID)
+ * @returns {{isValid: boolean, id: string|null, error: string|null}}
  */
 export const validateUserId = (id) => {
-  return validateId(id, 'ID de usuario');
+  if (!id) {
+    return { isValid: false, id: null, error: 'ID de usuario requerido' };
+  }
+  
+  // Convert to string if it's not already
+  const idString = String(id).trim();
+  
+  // UUID regex pattern: 8-4-4-4-12 hexadecimal characters
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  
+  if (!uuidRegex.test(idString)) {
+    return { isValid: false, id: null, error: 'ID de usuario inválido. Debe ser un UUID válido.' };
+  }
+  
+  return { isValid: true, id: idString, error: null };
 };
 
 /**

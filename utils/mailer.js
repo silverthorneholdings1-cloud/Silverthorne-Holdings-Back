@@ -23,7 +23,6 @@ const brandConfig = {
 const buildBrandedEmail = ({ title, subtitle, bodyHtml }) => `
   <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; color: ${brandConfig.textColor};">
     <div style="text-align: center; margin-bottom: 24px;">
-      <img src="${brandConfig.logoUrl}" alt="${brandConfig.name}" style="max-height: 48px; margin-bottom: 12px;" />
       <h1 style="color: ${brandConfig.primaryColor}; margin: 0;">${brandConfig.name}</h1>
       ${subtitle ? `<p style="color: ${brandConfig.secondaryColor}; margin: 8px 0 0;">${subtitle}</p>` : ''}
     </div>
