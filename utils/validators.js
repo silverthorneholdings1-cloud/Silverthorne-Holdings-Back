@@ -8,22 +8,28 @@ import { productService } from '../models/productModel.js';
 // ============================================
 
 /**
- * Valida un ID numérico genérico
- * @param {string|number} id - ID a validar
+ * Valida un ID UUID genérico
+ * @param {string} id - ID a validar (debe ser un UUID)
  * @param {string} fieldName - Nombre del campo para mensajes de error
- * @returns {{isValid: boolean, id: number|null, error: string|null}}
+ * @returns {{isValid: boolean, id: string|null, error: string|null}}
  */
 export const validateId = (id, fieldName = 'ID') => {
   if (!id) {
     return { isValid: false, id: null, error: `${fieldName} requerido` };
   }
   
-  const idInt = parseInt(id);
-  if (isNaN(idInt) || idInt <= 0) {
+  // Convert to string if it's not already
+  const idStr = String(id).trim();
+  
+  // UUID v4 format: xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx
+  // where x is any hexadecimal digit and y is one of 8, 9, A, or B
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  
+  if (!uuidRegex.test(idStr)) {
     return { isValid: false, id: null, error: `${fieldName} inválido` };
   }
   
-  return { isValid: true, id: idInt, error: null };
+  return { isValid: true, id: idStr, error: null };
 };
 
 /**
@@ -101,8 +107,8 @@ export const validateRequiredFields = (data, requiredFields) => {
 
 /**
  * Valida el ID de un producto
- * @param {string|number} id - ID a validar
- * @returns {{isValid: boolean, productId: number|null, error: string|null}}
+ * @param {string} id - ID a validar (debe ser un UUID)
+ * @returns {{isValid: boolean, id: string|null, error: string|null}}
  */
 export const validateProductId = (id) => {
   return validateId(id, 'ID de producto');
@@ -346,8 +352,8 @@ export const validateProductForCart = async (productId, requestedQuantity, cart 
 
 /**
  * Valida el ID de una orden
- * @param {string|number} id - ID a validar
- * @returns {{isValid: boolean, orderId: number|null, error: string|null}}
+ * @param {string} id - ID a validar (debe ser un UUID)
+ * @returns {{isValid: boolean, id: string|null, error: string|null}}
  */
 export const validateOrderId = (id) => {
   return validateId(id, 'ID de orden');
