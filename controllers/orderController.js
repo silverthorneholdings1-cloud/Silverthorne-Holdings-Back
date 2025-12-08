@@ -12,6 +12,7 @@ import { validateShippingAddress, validateOrderStatus, validateOrderId } from '.
 import { calculateOrderStats, calculateDateRange } from '../utils/statsHelper.js';
 import { reserveStockForOrder, validateStockForCart, releaseStockForOrder } from '../utils/stockHelper.js';
 import { sendPaymentFailedEmail, sendOrderProcessingEmail, sendOrderShippedEmail, sendOrderDeliveredEmail } from '../utils/mailer.js';
+import { calculateProductPrice } from '../utils/productPriceHelper.js';
 
 // Helper function to create an order (shared logic)
 export const createOrderFromCart = async (userId, shippingAddress, notes = null) => {
@@ -33,8 +34,24 @@ export const createOrderFromCart = async (userId, shippingAddress, notes = null)
     throw new Error(stockValidation.error);
   }
 
-  // Calculate total
-  const totalAmount = cart.cart_items.reduce((acc, item) => 
+  // Recalculate prices based on current offer status to ensure we use the correct discounted price
+  const orderItems = cart.cart_items.map(item => {
+    const product = item.products;
+    // Recalculate price considering current offers (price may have changed since item was added to cart)
+    const finalPrice = product && product.price !== undefined 
+      ? calculateProductPrice(product) 
+      : item.price; // Fallback to stored price if product info is not available
+    
+    return {
+      productId: item.product_id,
+      productName: product?.name || '',
+      quantity: item.quantity,
+      price: finalPrice
+    };
+  });
+
+  // Calculate total using recalculated prices
+  const totalAmount = orderItems.reduce((acc, item) => 
     acc + (item.price * item.quantity), 0
   );
 
@@ -51,13 +68,7 @@ export const createOrderFromCart = async (userId, shippingAddress, notes = null)
       notes
     });
 
-    // Create order items
-    const orderItems = cart.cart_items.map(item => ({
-      productId: item.product_id,
-      productName: item.products?.name || '',
-      quantity: item.quantity,
-      price: item.price
-    }));
+    // Create order items with recalculated prices
 
     await orderService.createOrderItems(order.id, orderItems);
 
